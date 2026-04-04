@@ -8,8 +8,7 @@ import {
   MessageSquare,
   AppWindow,
   Settings,
-  Users,
-  Server,
+  ShieldCheck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/auth-context";
@@ -20,11 +19,6 @@ const navItems = [
   { href: "/chat", label: "Chat", icon: MessageSquare },
   { href: "/apps", label: "Apps", icon: AppWindow },
   { href: "/settings", label: "Settings", icon: Settings },
-];
-
-const adminItems = [
-  { href: "/admin/users", label: "Users", icon: Users },
-  { href: "/admin/machines", label: "Machines", icon: Server },
 ];
 
 export function Sidebar() {
@@ -61,7 +55,7 @@ export function Sidebar() {
             <div className="mt-4 mb-1 px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">
               Admin
             </div>
-            {adminItems.map(renderLink)}
+            {renderLink({ href: "/admin/dashboard", label: "Admin Panel", icon: ShieldCheck })}
           </>
         )}
       </nav>

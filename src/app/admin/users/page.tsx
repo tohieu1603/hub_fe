@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { api } from "@/lib/api";
-import { useAuth } from "@/lib/auth-context";
 import type { AdminUser, Machine } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -12,7 +11,6 @@ import { toast } from "sonner";
 import { Shield, Trash2, Monitor } from "lucide-react";
 
 export default function AdminUsersPage() {
-  const { user } = useAuth();
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [machines, setMachines] = useState<Machine[]>([]);
   const [assignDialog, setAssignDialog] = useState<AdminUser | null>(null);
@@ -23,13 +21,11 @@ export default function AdminUsersPage() {
       const [u, m] = await Promise.all([api.admin.users(), api.machines.list()]);
       setUsers(u);
       setMachines(Array.isArray(m) ? m : []);
-    } catch { toast.error("Failed to load data"); }
+    } catch { toast.error("Failed to load"); }
     setLoading(false);
   };
 
   useEffect(() => { load(); }, []);
-
-  if (user?.role !== "admin") return <p className="text-red-400 p-8">Admin only</p>;
 
   const toggleRole = async (u: AdminUser) => {
     const newRole = u.role === "admin" ? "user" : "admin";
@@ -39,7 +35,7 @@ export default function AdminUsersPage() {
   };
 
   const deleteUser = async (u: AdminUser) => {
-    if (!confirm(`Delete ${u.name}?`)) return;
+    if (!confirm(`Delete ${u.name}? This will unassign their machine.`)) return;
     await api.admin.deleteUser(u.id);
     toast.success("Deleted");
     load();
@@ -54,13 +50,13 @@ export default function AdminUsersPage() {
 
   const unassignMachine = async (machineId: string) => {
     await api.machines.unassign(machineId);
-    toast.success("Machine unassigned");
+    toast.success("Unassigned");
     load();
   };
 
   const availableMachines = machines.filter((m) => m.status === "available");
 
-  if (loading) return <p className="text-slate-400 p-8">Loading...</p>;
+  if (loading) return <p className="text-slate-400">Loading...</p>;
 
   return (
     <div className="space-y-6">
@@ -70,7 +66,7 @@ export default function AdminUsersPage() {
         {users.map((u) => (
           <Card key={u.id} className="bg-slate-900 border-slate-800 p-4">
             <div className="flex items-center justify-between">
-              <div className="flex-1">
+              <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
                   <span className="text-slate-100 font-medium">{u.name}</span>
                   <Badge className={u.role === "admin" ? "bg-amber-600/20 text-amber-400 border-amber-600/30" : "bg-slate-700 text-slate-300 border-slate-600"}>
@@ -80,27 +76,26 @@ export default function AdminUsersPage() {
                 <p className="text-sm text-slate-400">{u.email}</p>
                 {u.machine ? (
                   <div className="flex items-center gap-2 mt-1">
-                    <Monitor className="size-3 text-emerald-400" />
-                    <span className="text-xs text-emerald-400">{u.machine.name} — {u.machine.hub_url}</span>
-                    <Button size="sm" variant="ghost" className="text-xs text-red-400 h-6 px-2" onClick={() => unassignMachine(u.machine!.id)}>
+                    <Monitor className="size-3 text-emerald-400 shrink-0" />
+                    <span className="text-xs text-emerald-400 truncate">{u.machine.name} — {u.machine.hub_url}</span>
+                    <Button size="sm" variant="ghost" className="text-xs text-red-400 h-6 px-2 shrink-0" onClick={() => unassignMachine(u.machine!.id)}>
                       Unassign
                     </Button>
                   </div>
                 ) : (
-                  <p className="text-xs text-slate-500 mt-1">No machine assigned</p>
+                  <p className="text-xs text-slate-500 mt-1">No machine</p>
                 )}
               </div>
-
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1 shrink-0">
                 {!u.machine && (
                   <Button size="sm" variant="outline" className="border-slate-700 text-slate-300 text-xs" onClick={() => setAssignDialog(u)}>
                     <Monitor className="size-3 mr-1" /> Assign
                   </Button>
                 )}
-                <Button size="sm" variant="ghost" className="text-slate-400" onClick={() => toggleRole(u)}>
+                <Button size="sm" variant="ghost" className="text-slate-400" onClick={() => toggleRole(u)} title="Toggle role">
                   <Shield className="size-4" />
                 </Button>
-                <Button size="sm" variant="ghost" className="text-red-400" onClick={() => deleteUser(u)}>
+                <Button size="sm" variant="ghost" className="text-red-400" onClick={() => deleteUser(u)} title="Delete user">
                   <Trash2 className="size-4" />
                 </Button>
               </div>
@@ -109,14 +104,13 @@ export default function AdminUsersPage() {
         ))}
       </div>
 
-      {/* Assign Machine Dialog */}
       <Dialog open={!!assignDialog} onOpenChange={() => setAssignDialog(null)}>
         <DialogContent className="bg-slate-900 border-slate-800 text-slate-100">
           <DialogHeader>
             <DialogTitle>Assign machine to {assignDialog?.name}</DialogTitle>
           </DialogHeader>
           {availableMachines.length === 0 ? (
-            <p className="text-slate-400 text-sm">No available machines. Create one first.</p>
+            <p className="text-slate-400 text-sm">No available machines. Add one in Machines page.</p>
           ) : (
             <div className="space-y-2">
               {availableMachines.map((m) => (
