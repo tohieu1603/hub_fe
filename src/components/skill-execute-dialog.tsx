@@ -47,7 +47,7 @@ export function SkillExecuteDialog({ capability, open, onClose }: Props) {
       });
       setResult(JSON.stringify(res, null, 2));
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "Execution failed";
+      const msg = err instanceof Error ? err.message : typeof err === "object" ? JSON.stringify(err) : String(err);
       setError(msg);
       toast.error(msg);
     } finally {

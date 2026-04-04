@@ -25,7 +25,10 @@ export async function apiFetch<T = unknown>(
     localStorage.removeItem("token");
     window.location.href = "/login";
   }
-  if (!res.ok) throw new Error(data.error || `Request failed: ${res.status}`);
+  if (!res.ok) {
+    const errMsg = typeof data.error === "string" ? data.error : data.error?.message || JSON.stringify(data.error) || `Request failed: ${res.status}`;
+    throw new Error(errMsg);
+  }
   return data as T;
 }
 
