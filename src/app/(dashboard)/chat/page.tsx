@@ -143,24 +143,43 @@ export default function ChatPage() {
   }
 
   return (
-    <div className="flex flex-col h-[calc(100vh-8rem)] max-h-[800px]">
-      <ScrollArea className="flex-1 rounded-xl border border-slate-800 bg-slate-900 p-4">
+    <div className="flex flex-col h-[calc(100dvh-3.5rem-2rem)] md:h-[calc(100vh-8rem)] md:max-h-[800px]">
+      <ScrollArea className="flex-1 rounded-xl border border-slate-800 bg-slate-900 p-3 md:p-4">
         {messages.length === 0 ? (
-          <p className="text-slate-500 text-sm text-center py-8">Chat with your Hub AI. It can call skills, read code, and execute tasks.</p>
+          <p className="text-slate-500 text-sm text-center py-8 px-2">
+            Chat with your Hub AI. It can call skills, read code, and execute tasks.
+          </p>
         ) : (
           <div className="flex flex-col gap-3">
             {messages.map((msg, i) => (
-              <div key={i} className={cn("flex", msg.role === "user" ? "justify-end" : "justify-start")}>
-                <div className={cn(
-                  "max-w-[85%] rounded-xl px-4 py-2.5 text-sm",
-                  msg.role === "user" ? "bg-emerald-600 text-white" : "bg-slate-800 text-slate-100"
-                )}>
+              <div
+                key={i}
+                className={cn(
+                  "flex",
+                  msg.role === "user" ? "justify-end" : "justify-start"
+                )}
+              >
+                <div
+                  className={cn(
+                    "max-w-[90%] md:max-w-[85%] rounded-xl px-3 py-2 md:px-4 md:py-2.5 text-sm",
+                    msg.role === "user"
+                      ? "bg-emerald-600 text-white"
+                      : "bg-slate-800 text-slate-100"
+                  )}
+                >
                   {msg.role === "assistant" ? (
                     <div className="chat-md">
-                      <ReactMarkdown>{msg.content || (streaming && i === messages.length - 1 ? "..." : "")}</ReactMarkdown>
+                      <ReactMarkdown>
+                        {msg.content ||
+                          (streaming && i === messages.length - 1
+                            ? "..."
+                            : "")}
+                      </ReactMarkdown>
                     </div>
                   ) : (
-                    <p className="whitespace-pre-wrap break-words">{msg.content}</p>
+                    <p className="whitespace-pre-wrap break-words">
+                      {msg.content}
+                    </p>
                   )}
                 </div>
               </div>
@@ -185,23 +204,44 @@ export default function ChatPage() {
         )}
       </ScrollArea>
 
-      {cost > 0 && <p className="text-xs text-slate-500 mt-1 px-1">Cost: ${cost.toFixed(4)}</p>}
+      {cost > 0 && (
+        <p className="text-xs text-slate-500 mt-1 px-1">
+          Cost: ${cost.toFixed(4)}
+        </p>
+      )}
 
       <div className="flex gap-2 mt-3">
         <Textarea
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); } }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && !e.shiftKey) {
+              e.preventDefault();
+              sendMessage();
+            }
+          }}
           placeholder="Ask anything... (Enter to send)"
-          className="flex-1 resize-none bg-slate-900 border-slate-800 text-slate-100 placeholder:text-slate-500 min-h-12 max-h-32"
+          className="flex-1 resize-none bg-slate-900 border-slate-800 text-slate-100 placeholder:text-slate-500 min-h-[44px] max-h-32 text-base md:text-sm"
           disabled={streaming}
         />
         {streaming ? (
-          <Button onClick={() => { abortRef.current?.abort(); setStreaming(false); }} className="bg-red-600 hover:bg-red-700 text-white self-end" size="icon">
+          <Button
+            onClick={() => {
+              abortRef.current?.abort();
+              setStreaming(false);
+            }}
+            className="bg-red-600 hover:bg-red-700 text-white self-end min-h-[44px] min-w-[44px]"
+            size="icon"
+          >
             <Square className="size-4" />
           </Button>
         ) : (
-          <Button onClick={sendMessage} disabled={!input.trim()} className="bg-emerald-600 hover:bg-emerald-700 text-white self-end" size="icon">
+          <Button
+            onClick={sendMessage}
+            disabled={!input.trim()}
+            className="bg-emerald-600 hover:bg-emerald-700 text-white self-end min-h-[44px] min-w-[44px]"
+            size="icon"
+          >
             <Send className="size-4" />
           </Button>
         )}

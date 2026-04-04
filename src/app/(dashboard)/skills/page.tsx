@@ -49,20 +49,28 @@ export default function SkillsPage() {
   );
 
   return (
-    <div className="flex flex-col gap-8">
+    <div className="flex flex-col gap-6 md:gap-8">
       {Object.entries(grouped).map(([appName, caps]) => (
         <section key={appName}>
-          <h2 className="text-base font-semibold text-slate-100 mb-3">
+          <h2 className="text-sm md:text-base font-semibold text-slate-100 mb-3">
             {appName}
           </h2>
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+          <div className="grid grid-cols-1 gap-3 md:gap-3 sm:grid-cols-2 xl:grid-cols-3">
             {caps.map((cap) => (
               <Card
                 key={cap.capability_id}
-                className="bg-slate-900 border-slate-800 cursor-pointer hover:border-emerald-600/40 transition-colors"
+                className="bg-slate-900 border-slate-800 cursor-pointer hover:border-emerald-600/40 transition-colors active:bg-slate-800/50"
                 onClick={() => setSelected(cap)}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    setSelected(cap);
+                  }
+                }}
               >
-                <CardHeader>
+                <CardHeader className="pb-2">
                   <CardTitle className="text-sm text-slate-100">
                     {cap.name}
                   </CardTitle>

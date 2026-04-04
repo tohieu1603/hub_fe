@@ -40,13 +40,13 @@ export default function LoginPage() {
 
   return (
     <Card className="w-full max-w-sm bg-slate-900 border-slate-800">
-      <CardHeader>
+      <CardHeader className="px-4 md:px-6">
         <CardTitle className="text-slate-100 text-xl">Sign in</CardTitle>
         <CardDescription className="text-slate-400">
           Enter your credentials to access the hub
         </CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="px-4 md:px-6">
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="email" className="text-slate-300">
@@ -59,7 +59,7 @@ export default function LoginPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="bg-slate-800 border-slate-700 text-slate-100 placeholder:text-slate-500"
+              className="bg-slate-800 border-slate-700 text-slate-100 placeholder:text-slate-500 h-11"
             />
           </div>
           <div className="flex flex-col gap-1.5">
@@ -73,13 +73,13 @@ export default function LoginPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="bg-slate-800 border-slate-700 text-slate-100 placeholder:text-slate-500"
+              className="bg-slate-800 border-slate-700 text-slate-100 placeholder:text-slate-500 h-11"
             />
           </div>
           <Button
             type="submit"
             disabled={loading}
-            className="bg-emerald-600 hover:bg-emerald-700 text-white mt-2"
+            className="bg-emerald-600 hover:bg-emerald-700 text-white mt-2 h-11 text-base"
           >
             {loading ? "Signing in..." : "Sign in"}
           </Button>

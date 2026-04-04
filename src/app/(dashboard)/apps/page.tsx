@@ -59,16 +59,24 @@ export default function AppsPage() {
       {apps.length === 0 && (
         <p className="text-slate-500 text-sm">No apps connected.</p>
       )}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+      <div className="grid grid-cols-1 gap-3 md:gap-4 sm:grid-cols-2 xl:grid-cols-3">
         {apps.map((app) => (
           <Card
             key={app.app_id}
-            className="bg-slate-900 border-slate-800 cursor-pointer hover:border-slate-700 transition-colors"
+            className="bg-slate-900 border-slate-800 cursor-pointer hover:border-slate-700 transition-colors active:bg-slate-800/50"
             onClick={() =>
               setExpanded(expanded === app.app_id ? null : app.app_id)
             }
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                setExpanded(expanded === app.app_id ? null : app.app_id);
+              }
+            }}
           >
-            <CardHeader>
+            <CardHeader className="pb-2">
               <div className="flex items-start justify-between gap-2">
                 <div className="flex flex-col gap-0.5">
                   <CardTitle className="text-slate-100 text-sm">
@@ -76,7 +84,9 @@ export default function AppsPage() {
                   </CardTitle>
                   <span className="text-xs text-slate-500">v{app.version}</span>
                 </div>
-                <Badge className={`${statusBadgeClass(app.status)} text-xs shrink-0`}>
+                <Badge
+                  className={`${statusBadgeClass(app.status)} text-xs shrink-0`}
+                >
                   {app.status}
                 </Badge>
               </div>

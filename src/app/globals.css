@@ -120,12 +120,23 @@
 @layer base {
   * {
     @apply border-border outline-ring/50;
+    -webkit-tap-highlight-color: transparent;
   }
   body {
     @apply bg-background text-foreground;
+    /* Prevent iOS horizontal scroll */
+    overflow-x: hidden;
   }
   html {
     @apply font-sans;
+    /* Use dynamic viewport for mobile browsers */
+    height: -webkit-fill-available;
+  }
+  /* Ensure inputs/buttons meet min touch target on mobile */
+  @media (max-width: 767px) {
+    input, textarea, select, button, [role="button"] {
+      font-size: 16px; /* prevent iOS zoom on focus */
+    }
   }
 }
 

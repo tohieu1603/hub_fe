@@ -21,20 +21,25 @@ export function Topbar() {
   const title = pageTitles[pathname] ?? "Hub";
 
   return (
-    <header className="h-14 border-b border-slate-800 bg-slate-900 flex items-center justify-between px-6 shrink-0">
-      <h1 className="text-base font-semibold text-slate-100">{title}</h1>
-      <div className="flex items-center gap-3">
+    <header className="h-14 border-b border-slate-800 bg-slate-900 flex items-center justify-between px-4 md:px-6 shrink-0">
+      {/* Left: title — offset on mobile to clear hamburger button */}
+      <h1 className="text-base font-semibold text-slate-100 pl-10 md:pl-0">
+        {title}
+      </h1>
+
+      {/* Right: machine badge + user info + logout */}
+      <div className="flex items-center gap-2 md:gap-3">
         {machine ? (
-          <Badge className="bg-emerald-600/20 text-emerald-400 border-emerald-600/30 text-xs">
+          <Badge className="bg-emerald-600/20 text-emerald-400 border-emerald-600/30 text-xs hidden sm:inline-flex">
             {machine.name}
           </Badge>
         ) : (
-          <Badge className="bg-red-600/20 text-red-400 border-red-600/30 text-xs">
+          <Badge className="bg-red-600/20 text-red-400 border-red-600/30 text-xs hidden sm:inline-flex">
             No machine
           </Badge>
         )}
         {user && (
-          <span className="text-sm text-slate-400 hidden sm:block">
+          <span className="text-sm text-slate-400 hidden sm:block truncate max-w-[120px] md:max-w-none">
             {user.name}
           </span>
         )}
@@ -42,7 +47,7 @@ export function Topbar() {
           variant="ghost"
           size="icon-sm"
           onClick={logout}
-          className="text-slate-400 hover:text-slate-100"
+          className="text-slate-400 hover:text-slate-100 min-h-[44px] min-w-[44px]"
         >
           <LogOut className="size-4" />
           <span className="sr-only">Logout</span>

@@ -18,10 +18,10 @@ export default function SettingsPage() {
   if (!user) return null;
 
   return (
-    <div className="flex flex-col gap-6 max-w-xl">
+    <div className="flex flex-col gap-4 md:gap-6 w-full max-w-xl">
       {/* User info */}
       <Card className="bg-slate-900 border-slate-800">
-        <CardHeader>
+        <CardHeader className="pb-3">
           <div className="flex items-center gap-2">
             <User className="size-4 text-slate-400" />
             <CardTitle className="text-slate-100 text-sm font-medium">
@@ -30,18 +30,22 @@ export default function SettingsPage() {
           </div>
         </CardHeader>
         <CardContent className="flex flex-col gap-3">
-          <div className="flex items-center justify-between">
-            <span className="text-xs text-slate-500">Name</span>
-            <span className="text-sm text-slate-100">{user.name}</span>
+          <div className="flex items-center justify-between gap-4">
+            <span className="text-xs text-slate-500 shrink-0">Name</span>
+            <span className="text-sm text-slate-100 text-right break-all">
+              {user.name}
+            </span>
           </div>
           <Separator className="bg-slate-800" />
-          <div className="flex items-center justify-between">
-            <span className="text-xs text-slate-500">Email</span>
-            <span className="text-sm text-slate-100">{user.email}</span>
+          <div className="flex items-center justify-between gap-4">
+            <span className="text-xs text-slate-500 shrink-0">Email</span>
+            <span className="text-sm text-slate-100 text-right break-all">
+              {user.email}
+            </span>
           </div>
           <Separator className="bg-slate-800" />
-          <div className="flex items-center justify-between">
-            <span className="text-xs text-slate-500">Role</span>
+          <div className="flex items-center justify-between gap-4">
+            <span className="text-xs text-slate-500 shrink-0">Role</span>
             <Badge className="bg-slate-800 text-slate-300 border-slate-700 text-xs">
               {user.role}
             </Badge>
@@ -51,7 +55,7 @@ export default function SettingsPage() {
 
       {/* Machine info */}
       <Card className="bg-slate-900 border-slate-800">
-        <CardHeader>
+        <CardHeader className="pb-3">
           <div className="flex items-center gap-2">
             <Server className="size-4 text-slate-400" />
             <CardTitle className="text-slate-100 text-sm font-medium">
@@ -62,20 +66,22 @@ export default function SettingsPage() {
         <CardContent className="flex flex-col gap-3">
           {machine ? (
             <>
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-slate-500">Name</span>
-                <span className="text-sm text-slate-100">{machine.name}</span>
+              <div className="flex items-center justify-between gap-4">
+                <span className="text-xs text-slate-500 shrink-0">Name</span>
+                <span className="text-sm text-slate-100 text-right">
+                  {machine.name}
+                </span>
               </div>
               <Separator className="bg-slate-800" />
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-slate-500">Hub URL</span>
-                <span className="text-sm text-slate-100 truncate max-w-[60%]">
+              <div className="flex items-start justify-between gap-4">
+                <span className="text-xs text-slate-500 shrink-0">Hub URL</span>
+                <span className="text-sm text-slate-100 text-right break-all max-w-[65%]">
                   {machine.hub_url}
                 </span>
               </div>
               <Separator className="bg-slate-800" />
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-slate-500">Status</span>
+              <div className="flex items-center justify-between gap-4">
+                <span className="text-xs text-slate-500 shrink-0">Status</span>
                 <Badge
                   className={
                     machine.status === "active"
@@ -97,7 +103,7 @@ export default function SettingsPage() {
       <Button
         variant="destructive"
         onClick={logout}
-        className="w-fit gap-2"
+        className="w-full sm:w-fit gap-2 min-h-[44px]"
       >
         <LogOut className="size-4" />
         Sign out
