@@ -81,8 +81,7 @@ export const api = {
       ),
   },
   machines: {
-    list: () =>
-      apiFetch<{ machines: import("@/types").Machine[] }>("/machines"),
+    list: () => apiFetch<import("@/types").Machine[]>("/machines"),
     create: (body: { name: string; hub_url: string; subdomain?: string }) =>
       apiFetch("/machines", { method: "POST", body: JSON.stringify(body) }),
     assign: (id: string, userId: string) =>
@@ -92,5 +91,12 @@ export const api = {
       }),
     unassign: (id: string) =>
       apiFetch(`/machines/${id}/unassign`, { method: "PUT" }),
+  },
+  admin: {
+    users: () => apiFetch<import("@/types").AdminUser[]>("/admin/users"),
+    setRole: (id: string, role: string) =>
+      apiFetch(`/admin/users/${id}/role`, { method: "PUT", body: JSON.stringify({ role }) }),
+    deleteUser: (id: string) =>
+      apiFetch(`/admin/users/${id}`, { method: "DELETE" }),
   },
 };

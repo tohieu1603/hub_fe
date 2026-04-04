@@ -42,3 +42,12 @@ export interface ChatMessage {
   role: "user" | "assistant";
   content: string;
 }
+
+export interface AdminUser {
+  id: string;
+  email: string;
+  name: string;
+  role: string;
+  created_at: string;
+  machine: { id: string; name: string; status: string; hub_url: string } | null;
+}
