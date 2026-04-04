@@ -35,17 +35,19 @@ export default function AdminUsersPage() {
   };
 
   const deleteUser = async (u: AdminUser) => {
-    if (!confirm(`Delete ${u.name}? This will unassign their machine.`)) return;
+    if (!confirm(`Delete ${u.name}?`)) return;
     await api.admin.deleteUser(u.id);
     toast.success("Deleted");
     load();
   };
 
   const assignMachine = async (userId: string, machineId: string) => {
-    await api.machines.assign(machineId, userId);
-    toast.success("Machine assigned");
-    setAssignDialog(null);
-    load();
+    try {
+      await api.machines.assign(machineId, userId);
+      toast.success("Machine assigned");
+      setAssignDialog(null);
+      load();
+    } catch (err) { toast.error(err instanceof Error ? err.message : "Failed"); }
   };
 
   const unassignMachine = async (machineId: string) => {
@@ -75,21 +77,25 @@ export default function AdminUsersPage() {
                 </div>
                 <p className="text-sm text-slate-400">{u.email}</p>
                 {u.machine ? (
-                  <div className="flex items-center gap-2 mt-1">
-                    <Monitor className="size-3 text-emerald-400 shrink-0" />
-                    <span className="text-xs text-emerald-400 truncate">{u.machine.name} — {u.machine.hub_url}</span>
-                    <Button size="sm" variant="ghost" className="text-xs text-red-400 h-6 px-2 shrink-0" onClick={() => unassignMachine(u.machine!.id)}>
+                  <div className="flex items-center gap-2 mt-2 bg-slate-800/50 rounded-lg px-3 py-2">
+                    <Monitor className="size-4 text-emerald-400 shrink-0" />
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm text-emerald-400 font-medium">{u.machine.name}</p>
+                      <p className="text-xs text-slate-400 truncate">{u.machine.hub_url}</p>
+                    </div>
+                    <Badge className="bg-emerald-600/20 text-emerald-400 border-emerald-600/30 text-xs">{u.machine.status}</Badge>
+                    <Button size="sm" variant="ghost" className="text-xs text-red-400 h-7 px-2 shrink-0" onClick={() => unassignMachine(u.machine!.id)}>
                       Unassign
                     </Button>
                   </div>
                 ) : (
-                  <p className="text-xs text-slate-500 mt-1">No machine</p>
+                  <p className="text-xs text-slate-500 mt-1">No machine assigned</p>
                 )}
               </div>
-              <div className="flex items-center gap-1 shrink-0">
+              <div className="flex items-center gap-1 shrink-0 ml-3">
                 {!u.machine && (
-                  <Button size="sm" variant="outline" className="border-slate-700 text-slate-300 text-xs" onClick={() => setAssignDialog(u)}>
-                    <Monitor className="size-3 mr-1" /> Assign
+                  <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs" onClick={() => setAssignDialog(u)}>
+                    <Monitor className="size-3 mr-1" /> Assign Hub
                   </Button>
                 )}
                 <Button size="sm" variant="ghost" className="text-slate-400" onClick={() => toggleRole(u)} title="Toggle role">
@@ -104,20 +110,31 @@ export default function AdminUsersPage() {
         ))}
       </div>
 
+      {/* Assign Machine Dialog — pick from available machines */}
       <Dialog open={!!assignDialog} onOpenChange={() => setAssignDialog(null)}>
-        <DialogContent className="bg-slate-900 border-slate-800 text-slate-100">
+        <DialogContent className="bg-slate-900 border-slate-800 text-slate-100 sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Assign machine to {assignDialog?.name}</DialogTitle>
+            <DialogTitle>Assign Hub to {assignDialog?.name}</DialogTitle>
           </DialogHeader>
           {availableMachines.length === 0 ? (
-            <p className="text-slate-400 text-sm">No available machines. Add one in Machines page.</p>
+            <div className="text-center py-6">
+              <p className="text-slate-400 text-sm">No available machines.</p>
+              <p className="text-slate-500 text-xs mt-1">Go to Machines page to add one first.</p>
+            </div>
           ) : (
-            <div className="space-y-2">
+            <div className="space-y-2 max-h-72 overflow-auto">
               {availableMachines.map((m) => (
-                <Card key={m.id} className="bg-slate-800 border-slate-700 p-3 cursor-pointer hover:border-emerald-600 transition-colors"
+                <Card key={m.id}
+                  className="bg-slate-800 border-slate-700 p-3 cursor-pointer hover:border-emerald-600 transition-colors"
                   onClick={() => assignDialog && assignMachine(assignDialog.id, m.id)}>
-                  <p className="text-slate-100 font-medium">{m.name}</p>
-                  <p className="text-xs text-slate-400">{m.hub_url}</p>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-slate-100 font-medium text-sm">{m.name}</p>
+                      <p className="text-xs text-slate-400 mt-0.5">{m.hub_url}</p>
+                      {m.subdomain && <p className="text-xs text-slate-500">subdomain: {m.subdomain}</p>}
+                    </div>
+                    <Badge className="bg-slate-700 text-slate-300 text-xs">available</Badge>
+                  </div>
                 </Card>
               ))}
             </div>
