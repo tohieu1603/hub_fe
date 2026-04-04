@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import type { ChatMessage } from "@/types";
+import ReactMarkdown from "react-markdown";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -188,7 +189,13 @@ export default function ChatPage() {
                   "max-w-[85%] rounded-xl px-4 py-2.5 text-sm",
                   msg.role === "user" ? "bg-emerald-600 text-white" : "bg-slate-800 text-slate-100"
                 )}>
-                  <p className="whitespace-pre-wrap break-words">{msg.content || (streaming && i === messages.length - 1 ? "..." : "")}</p>
+                  {msg.role === "assistant" ? (
+                    <div className="chat-md text-sm">
+                      <ReactMarkdown>{msg.content || (streaming && i === messages.length - 1 ? "..." : "")}</ReactMarkdown>
+                    </div>
+                  ) : (
+                    <p className="whitespace-pre-wrap break-words">{msg.content}</p>
+                  )}
                 </div>
               </div>
             ))}
