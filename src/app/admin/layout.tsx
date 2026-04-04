@@ -5,13 +5,14 @@ import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth-context";
 import { cn } from "@/lib/utils";
-import { LayoutDashboard, Users, Server, LogOut, ArrowLeft } from "lucide-react";
+import { LayoutDashboard, Users, Server, Zap, LogOut, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const adminNav = [
   { href: "/admin/dashboard", label: "Overview", icon: LayoutDashboard },
   { href: "/admin/users", label: "Users", icon: Users },
   { href: "/admin/machines", label: "Machines", icon: Server },
+  { href: "/admin/skills", label: "Skills", icon: Zap },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
