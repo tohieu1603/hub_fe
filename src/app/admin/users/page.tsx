@@ -4,11 +4,12 @@ import { useState, useEffect } from "react";
 import { api } from "@/lib/api";
 import type { AdminUser, Machine } from "@/types";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Shield, Trash2, Monitor } from "lucide-react";
+import { Shield, Trash2, Monitor, Link2Off, Users } from "lucide-react";
 
 export default function AdminUsersPage() {
   const [users, setUsers] = useState<AdminUser[]>([]);
@@ -28,9 +29,8 @@ export default function AdminUsersPage() {
   useEffect(() => { load(); }, []);
 
   const toggleRole = async (u: AdminUser) => {
-    const newRole = u.role === "admin" ? "user" : "admin";
-    await api.admin.setRole(u.id, newRole);
-    toast.success(`${u.name} → ${newRole}`);
+    await api.admin.setRole(u.id, u.role === "admin" ? "user" : "admin");
+    toast.success(`${u.name} → ${u.role === "admin" ? "user" : "admin"}`);
     load();
   };
 
@@ -44,98 +44,101 @@ export default function AdminUsersPage() {
   const assignMachine = async (userId: string, machineId: string) => {
     try {
       await api.machines.assign(machineId, userId);
-      toast.success("Machine assigned");
+      toast.success("Assigned");
       setAssignDialog(null);
       load();
     } catch (err) { toast.error(err instanceof Error ? err.message : "Failed"); }
   };
 
-  const unassignMachine = async (machineId: string) => {
+  const unassign = async (machineId: string) => {
     await api.machines.unassign(machineId);
     toast.success("Unassigned");
     load();
   };
 
-  const availableMachines = machines.filter((m) => m.status === "available");
+  const available = machines.filter((m) => m.status === "available");
 
-  if (loading) return <p className="text-slate-400">Loading...</p>;
+  if (loading) return <p className="text-slate-400 p-8">Loading...</p>;
 
   return (
     <div className="space-y-6">
-      <h1 className="text-xl font-semibold text-slate-100">Users ({users.length})</h1>
-
-      <div className="space-y-3">
-        {users.map((u) => (
-          <Card key={u.id} className="bg-slate-900 border-slate-800 p-4">
-            <div className="flex items-center justify-between">
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <span className="text-slate-100 font-medium">{u.name}</span>
-                  <Badge className={u.role === "admin" ? "bg-amber-600/20 text-amber-400 border-amber-600/30" : "bg-slate-700 text-slate-300 border-slate-600"}>
-                    {u.role}
-                  </Badge>
-                </div>
-                <p className="text-sm text-slate-400">{u.email}</p>
-                {u.machine ? (
-                  <div className="flex items-center gap-2 mt-2 bg-slate-800/50 rounded-lg px-3 py-2">
-                    <Monitor className="size-4 text-emerald-400 shrink-0" />
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm text-emerald-400 font-medium">{u.machine.name}</p>
-                      <p className="text-xs text-slate-400 truncate">{u.machine.hub_url}</p>
-                    </div>
-                    <Badge className="bg-emerald-600/20 text-emerald-400 border-emerald-600/30 text-xs">{u.machine.status}</Badge>
-                    <Button size="sm" variant="ghost" className="text-xs text-red-400 h-7 px-2 shrink-0" onClick={() => unassignMachine(u.machine!.id)}>
-                      Unassign
-                    </Button>
-                  </div>
-                ) : (
-                  <p className="text-xs text-slate-500 mt-1">No machine assigned</p>
-                )}
-              </div>
-              <div className="flex items-center gap-1 shrink-0 ml-3">
-                {!u.machine && (
-                  <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs" onClick={() => setAssignDialog(u)}>
-                    <Monitor className="size-3 mr-1" /> Assign Hub
-                  </Button>
-                )}
-                <Button size="sm" variant="ghost" className="text-slate-400" onClick={() => toggleRole(u)} title="Toggle role">
-                  <Shield className="size-4" />
-                </Button>
-                <Button size="sm" variant="ghost" className="text-red-400" onClick={() => deleteUser(u)} title="Delete user">
-                  <Trash2 className="size-4" />
-                </Button>
-              </div>
-            </div>
-          </Card>
-        ))}
+      <div className="flex items-center gap-3">
+        <Users className="size-6 text-blue-400" />
+        <div>
+          <h1 className="text-xl font-bold text-slate-100">Users</h1>
+          <p className="text-xs text-slate-400">{users.length} users registered</p>
+        </div>
       </div>
 
-      {/* Assign Machine Dialog — pick from available machines */}
+      <Card className="bg-slate-900 border-slate-800">
+        <CardContent className="p-0">
+          <Table>
+            <TableHeader>
+              <TableRow className="border-slate-800 hover:bg-transparent">
+                <TableHead className="text-slate-400">Name</TableHead>
+                <TableHead className="text-slate-400">Email</TableHead>
+                <TableHead className="text-slate-400">Role</TableHead>
+                <TableHead className="text-slate-400">Machine</TableHead>
+                <TableHead className="text-slate-400 text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {users.map((u) => (
+                <TableRow key={u.id} className="border-slate-800">
+                  <TableCell className="text-slate-100 font-medium">{u.name}</TableCell>
+                  <TableCell className="text-slate-400 text-sm">{u.email}</TableCell>
+                  <TableCell>
+                    <Badge variant="outline" className={u.role === "admin" ? "border-amber-600/50 text-amber-400" : "border-slate-600 text-slate-400"}>{u.role}</Badge>
+                  </TableCell>
+                  <TableCell>
+                    {u.machine ? (
+                      <div className="flex items-center gap-2">
+                        <Badge className="bg-emerald-600/20 text-emerald-400 border-emerald-600/30 text-xs">{u.machine.name}</Badge>
+                        <Button size="icon" variant="ghost" className="size-7 text-red-400 hover:text-red-300" title="Unassign" onClick={() => unassign(u.machine!.id)}>
+                          <Link2Off className="size-3.5" />
+                        </Button>
+                      </div>
+                    ) : (
+                      <Button size="sm" variant="outline" className="border-slate-700 text-slate-400 text-xs h-7" onClick={() => setAssignDialog(u)}>
+                        <Monitor className="size-3 mr-1" /> Assign
+                      </Button>
+                    )}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <div className="flex items-center justify-end gap-1">
+                      <Button size="icon" variant="ghost" className="size-8 text-slate-400 hover:text-amber-400" title="Toggle role" onClick={() => toggleRole(u)}>
+                        <Shield className="size-4" />
+                      </Button>
+                      <Button size="icon" variant="ghost" className="size-8 text-slate-400 hover:text-red-400" title="Delete" onClick={() => deleteUser(u)}>
+                        <Trash2 className="size-4" />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+
       <Dialog open={!!assignDialog} onOpenChange={() => setAssignDialog(null)}>
         <DialogContent className="bg-slate-900 border-slate-800 text-slate-100 sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Assign Hub to {assignDialog?.name}</DialogTitle>
           </DialogHeader>
-          {availableMachines.length === 0 ? (
-            <div className="text-center py-6">
-              <p className="text-slate-400 text-sm">No available machines.</p>
-              <p className="text-slate-500 text-xs mt-1">Go to Machines page to add one first.</p>
-            </div>
+          {available.length === 0 ? (
+            <p className="text-slate-400 text-sm text-center py-6">No available machines.</p>
           ) : (
             <div className="space-y-2 max-h-72 overflow-auto">
-              {availableMachines.map((m) => (
-                <Card key={m.id}
-                  className="bg-slate-800 border-slate-700 p-3 cursor-pointer hover:border-emerald-600 transition-colors"
+              {available.map((m) => (
+                <div key={m.id} className="flex items-center justify-between p-3 rounded-lg bg-slate-800 border border-slate-700 hover:border-emerald-600 cursor-pointer transition-colors"
                   onClick={() => assignDialog && assignMachine(assignDialog.id, m.id)}>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-slate-100 font-medium text-sm">{m.name}</p>
-                      <p className="text-xs text-slate-400 mt-0.5">{m.hub_url}</p>
-                      {m.subdomain && <p className="text-xs text-slate-500">subdomain: {m.subdomain}</p>}
-                    </div>
-                    <Badge className="bg-slate-700 text-slate-300 text-xs">available</Badge>
+                  <div>
+                    <p className="text-sm font-medium text-slate-100">{m.name}</p>
+                    <p className="text-xs text-slate-400">{m.hub_url}</p>
                   </div>
-                </Card>
+                  <Badge className="bg-slate-700 text-slate-300 text-xs">available</Badge>
+                </div>
               ))}
             </div>
           )}
