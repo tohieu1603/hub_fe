@@ -85,7 +85,7 @@ export const api = {
   },
   machines: {
     list: () => apiFetch<import("@/types").Machine[]>("/machines"),
-    create: (body: { name: string; hub_url: string; subdomain?: string }) =>
+    create: (body: { name: string; hub_url: string; subdomain?: string; hub_api_key?: string }) =>
       apiFetch("/machines", { method: "POST", body: JSON.stringify(body) }),
     assign: (id: string, userId: string) =>
       apiFetch(`/machines/${id}/assign`, {

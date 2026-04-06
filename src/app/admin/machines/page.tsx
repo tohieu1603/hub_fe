@@ -30,7 +30,7 @@ const statusDot: Record<string, string> = {
 export default function AdminMachinesPage() {
   const [machines, setMachines] = useState<Machine[]>([]);
   const [showCreate, setShowCreate] = useState(false);
-  const [form, setForm] = useState({ name: "", hub_url: "", subdomain: "" });
+  const [form, setForm] = useState({ name: "", hub_url: "", subdomain: "", hub_api_key: "" });
   const [loading, setLoading] = useState(true);
 
   const load = async () => {
@@ -49,7 +49,7 @@ export default function AdminMachinesPage() {
       await api.machines.create(form);
       toast.success("Machine created");
       setShowCreate(false);
-      setForm({ name: "", hub_url: "", subdomain: "" });
+      setForm({ name: "", hub_url: "", subdomain: "", hub_api_key: "" });
       load();
     } catch (err) { toast.error(err instanceof Error ? err.message : "Failed"); }
   };
@@ -128,6 +128,13 @@ export default function AdminMachinesPage() {
               <Input placeholder="https://mac1.trycloudflare.com" value={form.hub_url} onChange={(e) => setForm({ ...form, hub_url: e.target.value })}
                 className="bg-slate-800 border-slate-700 text-slate-100 mt-1.5" />
               <p className="text-xs text-slate-500 mt-1">Cloudflare Tunnel URL or internal IP:port</p>
+            </div>
+            <div>
+              <Label className="text-slate-300 text-sm">Hub API Key</Label>
+              <Input placeholder="Paste HUB_API_KEY from Hub .env" value={form.hub_api_key}
+                onChange={(e) => setForm({ ...form, hub_api_key: e.target.value })}
+                className="bg-slate-800 border-slate-700 text-slate-100 mt-1.5 font-mono text-xs" />
+              <p className="text-xs text-slate-500 mt-1">Copy từ Hub .env trên Mac Mini (mỗi Hub 1 key riêng)</p>
             </div>
             <div>
               <Label className="text-slate-300 text-sm">Subdomain (optional)</Label>
