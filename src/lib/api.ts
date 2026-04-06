@@ -94,6 +94,8 @@ export const api = {
       }),
     unassign: (id: string) =>
       apiFetch(`/machines/${id}/unassign`, { method: "PUT" }),
+    delete: (id: string) =>
+      apiFetch(`/machines/${id}`, { method: "DELETE" }),
   },
   admin: {
     users: () => apiFetch<import("@/types").AdminUser[]>("/admin/users"),

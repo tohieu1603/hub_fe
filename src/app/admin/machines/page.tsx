@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Plus, Server, Circle } from "lucide-react";
+import { Plus, Server, Circle, Trash2, Link2Off } from "lucide-react";
 
 const statusStyle: Record<string, string> = {
   available: "bg-slate-700 text-slate-300",
@@ -54,6 +54,23 @@ export default function AdminMachinesPage() {
     } catch (err) { toast.error(err instanceof Error ? err.message : "Failed"); }
   };
 
+  const deleteMachine = async (m: Machine) => {
+    if (!confirm(`Delete "${m.name}"?${m.assigned_user_id ? " This will also unassign the user." : ""}`)) return;
+    try {
+      await api.machines.delete(m.id);
+      toast.success("Deleted");
+      load();
+    } catch (err) { toast.error(err instanceof Error ? err.message : "Failed"); }
+  };
+
+  const unassignMachine = async (m: Machine) => {
+    try {
+      await api.machines.unassign(m.id);
+      toast.success("Unassigned");
+      load();
+    } catch (err) { toast.error(err instanceof Error ? err.message : "Failed"); }
+  };
+
   if (loading) return <p className="text-slate-400 p-8">Loading...</p>;
 
   return (
@@ -81,6 +98,7 @@ export default function AdminMachinesPage() {
                 <TableHead className="text-slate-400">Hub URL</TableHead>
                 <TableHead className="text-slate-400">Subdomain</TableHead>
                 <TableHead className="text-slate-400">Assigned</TableHead>
+                <TableHead className="text-slate-400 text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -102,10 +120,22 @@ export default function AdminMachinesPage() {
                       <span className="text-slate-500">—</span>
                     )}
                   </TableCell>
+                  <TableCell className="text-right">
+                    <div className="flex items-center justify-end gap-1">
+                      {m.assigned_user_id && (
+                        <Button size="icon" variant="ghost" className="size-8 text-amber-400 hover:text-amber-300" title="Unassign user" onClick={() => unassignMachine(m)}>
+                          <Link2Off className="size-4" />
+                        </Button>
+                      )}
+                      <Button size="icon" variant="ghost" className="size-8 text-slate-400 hover:text-red-400" title="Delete machine" onClick={() => deleteMachine(m)}>
+                        <Trash2 className="size-4" />
+                      </Button>
+                    </div>
+                  </TableCell>
                 </TableRow>
               ))}
               {machines.length === 0 && (
-                <TableRow><TableCell colSpan={5} className="text-center text-slate-500 py-8">No machines yet</TableCell></TableRow>
+                <TableRow><TableCell colSpan={6} className="text-center text-slate-500 py-8">No machines yet</TableCell></TableRow>
               )}
             </TableBody>
           </Table>
