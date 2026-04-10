@@ -30,7 +30,8 @@ export default function LoginPage() {
     try {
       const res = await api.auth.login({ email, password });
       await login(res.token);
-      router.replace("/dashboard");
+      // Use window.location for hard redirect to ensure auth state is fresh
+      window.location.href = "/dashboard";
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Login failed");
     } finally {

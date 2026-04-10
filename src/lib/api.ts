@@ -21,7 +21,7 @@ export async function apiFetch<T = unknown>(
     },
   });
   const data = await res.json();
-  if (res.status === 401 && typeof window !== "undefined") {
+  if (res.status === 401 && typeof window !== "undefined" && path === "/auth/me") {
     localStorage.removeItem("token");
     window.location.href = "/login";
   }
@@ -96,6 +96,14 @@ export const api = {
       apiFetch(`/machines/${id}/unassign`, { method: "PUT" }),
     delete: (id: string) =>
       apiFetch(`/machines/${id}`, { method: "DELETE" }),
+  },
+  aiExperts: {
+    list: () => apiFetch<{ success: boolean; data: any[] }>("/hub/ai-experts").catch(() => ({ success: false, data: [] })),
+    posts: (limit = 100) => apiFetch<{ success: boolean; data: any[] }>(`/hub/ai-experts/posts?limit=${limit}`).catch(() => ({ success: false, data: [] })),
+    post: (id: string) => apiFetch<{ success: boolean; data: any }>(`/hub/ai-experts/posts/${id}`),
+    summary: () => apiFetch<{ success: boolean; data: any }>("/hub/ai-experts/summary").catch(() => ({ success: false, data: {} })),
+    papers: () => apiFetch<{ success: boolean; data: any[] }>("/hub/ai-experts/papers").catch(() => ({ success: false, data: [] })),
+    repos: () => apiFetch<{ success: boolean; data: any[] }>("/hub/ai-experts/repos").catch(() => ({ success: false, data: [] })),
   },
   admin: {
     users: () => apiFetch<import("@/types").AdminUser[]>("/admin/users"),

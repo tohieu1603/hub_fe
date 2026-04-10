@@ -11,6 +11,7 @@ import {
   ShieldCheck,
   Menu,
   X,
+  Newspaper,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/auth-context";
@@ -26,6 +27,7 @@ const navItems = [
   { href: "/skills", label: "Skills", icon: Zap },
   { href: "/chat", label: "Chat", icon: MessageSquare },
   { href: "/apps", label: "Apps", icon: AppWindow },
+  { href: "/ai-feed", label: "AI Feed", icon: Newspaper },
   { href: "/settings", label: "Settings", icon: Settings },
 ];
 
