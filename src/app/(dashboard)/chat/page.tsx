@@ -3,12 +3,23 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import type { ChatMessage } from "@/types";
 import ReactMarkdown from "react-markdown";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Badge } from "@/components/ui/badge";
-import { Send, Square, Wrench, Brain } from "lucide-react";
-import { cn } from "@/lib/utils";
+import {
+  Card,
+  Input,
+  Button,
+  Tag,
+  Typography,
+  Empty,
+} from "antd";
+import {
+  SendOutlined,
+  StopOutlined,
+  ToolOutlined,
+  RobotOutlined,
+} from "@ant-design/icons";
+
+const { Text } = Typography;
+const { TextArea } = Input;
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/api";
 
@@ -37,7 +48,6 @@ export default function ChatPage() {
     setTool(null);
     setCost(0);
 
-    // Empty assistant message to stream into
     let assistantText = "";
     setMessages((prev) => [...prev, { role: "assistant", content: "" }]);
 
@@ -55,7 +65,7 @@ export default function ChatPage() {
 
       if (!resp.ok || !resp.body) {
         const err = await resp.text();
-        updateLastAssistant(`⚠️ Error: ${err}`);
+        updateLastAssistant(`Error: ${err}`);
         setStreaming(false);
         return;
       }
@@ -68,10 +78,8 @@ export default function ChatPage() {
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
-
         buf += decoder.decode(value, { stream: true });
 
-        // Parse SSE: "event: xxx\ndata: yyy\n\n"
         while (buf.includes("\n\n")) {
           const idx = buf.indexOf("\n\n");
           const block = buf.slice(0, idx);
@@ -79,17 +87,14 @@ export default function ChatPage() {
 
           currentEvent = "";
           let dataStr = "";
-
           for (const line of block.split("\n")) {
             if (line.startsWith("event: ")) currentEvent = line.slice(7).trim();
             else if (line.startsWith("data: ")) dataStr = line.slice(6);
           }
-
           if (!dataStr) continue;
 
           try {
             const data = JSON.parse(dataStr);
-
             switch (currentEvent) {
               case "thinking":
                 setThinking(true);
@@ -107,7 +112,6 @@ export default function ChatPage() {
                 setTool(null);
                 break;
               case "result":
-                // Use result text ONLY if we haven't received streaming text
                 if (!assistantText && data.text) {
                   assistantText = data.text;
                   updateLastAssistant(assistantText);
@@ -123,7 +127,7 @@ export default function ChatPage() {
       }
     } catch (err) {
       if ((err as Error).name !== "AbortError") {
-        updateLastAssistant(`⚠️ ${(err as Error).message}`);
+        updateLastAssistant(`Error: ${(err as Error).message}`);
       }
     } finally {
       setStreaming(false);
@@ -143,106 +147,110 @@ export default function ChatPage() {
   }
 
   return (
-    <div className="flex flex-col h-[calc(100dvh-3.5rem-2rem)] md:h-[calc(100vh-8rem)] md:max-h-[800px]">
-      <ScrollArea className="flex-1 rounded-xl border border-slate-800 bg-slate-900 p-3 md:p-4">
+    <div style={{ padding: 24, maxWidth: 1100, margin: "0 auto", height: "calc(100vh - 64px)", display: "flex", flexDirection: "column" }}>
+      <Card
+        style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}
+        styles={{ body: { flex: 1, overflow: "auto", padding: 16 } }}
+        title="Chat với Hub AI"
+        extra={cost > 0 && <Text type="secondary" style={{ fontSize: 12 }}>Cost: ${cost.toFixed(4)}</Text>}
+      >
         {messages.length === 0 ? (
-          <p className="text-slate-500 text-sm text-center py-8 px-2">
-            Chat with your Hub AI. It can call skills, read code, and execute tasks.
-          </p>
+          <Empty
+            image={Empty.PRESENTED_IMAGE_SIMPLE}
+            description="Chat với Hub AI. Có thể gọi skills, đọc code, dispatch pipeline."
+          />
         ) : (
-          <div className="flex flex-col gap-3">
-            {messages.map((msg, i) => (
+          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            {messages.map((m, i) => (
               <div
                 key={i}
-                className={cn(
-                  "flex",
-                  msg.role === "user" ? "justify-end" : "justify-start"
-                )}
+                style={{
+                  display: "flex",
+                  justifyContent: m.role === "user" ? "flex-end" : "flex-start",
+                }}
               >
                 <div
-                  className={cn(
-                    "max-w-[90%] md:max-w-[85%] rounded-xl px-3 py-2 md:px-4 md:py-2.5 text-sm",
-                    msg.role === "user"
-                      ? "bg-emerald-600 text-white"
-                      : "bg-slate-800 text-slate-100"
-                  )}
+                  style={{
+                    maxWidth: "85%",
+                    padding: "10px 14px",
+                    borderRadius: 12,
+                    background: m.role === "user" ? "#2563eb" : "#f1f5f9",
+                    color: m.role === "user" ? "#fff" : "#0f172a",
+                    fontSize: 14,
+                    lineHeight: 1.5,
+                  }}
                 >
-                  {msg.role === "assistant" ? (
+                  {m.role === "assistant" ? (
                     <div className="chat-md">
                       <ReactMarkdown>
-                        {msg.content ||
-                          (streaming && i === messages.length - 1
-                            ? "..."
-                            : "")}
+                        {m.content || (streaming && i === messages.length - 1 ? "..." : "")}
                       </ReactMarkdown>
                     </div>
                   ) : (
-                    <p className="whitespace-pre-wrap break-words">
-                      {msg.content}
-                    </p>
+                    <div style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
+                      {m.content}
+                    </div>
                   )}
                 </div>
               </div>
             ))}
 
             {streaming && (thinking || tool) && (
-              <div className="flex items-center gap-2 px-2">
+              <div style={{ display: "flex", gap: 8 }}>
                 {thinking && (
-                  <Badge className="bg-purple-600/20 text-purple-400 border-purple-600/30 text-xs animate-pulse">
-                    <Brain className="size-3 mr-1" /> Thinking...
-                  </Badge>
+                  <Tag color="purple" icon={<RobotOutlined />}>
+                    Thinking...
+                  </Tag>
                 )}
                 {tool && (
-                  <Badge className="bg-blue-600/20 text-blue-400 border-blue-600/30 text-xs">
-                    <Wrench className="size-3 mr-1" /> {tool}
-                  </Badge>
+                  <Tag color="blue" icon={<ToolOutlined />}>
+                    {tool}
+                  </Tag>
                 )}
               </div>
             )}
             <div ref={bottomRef} />
           </div>
         )}
-      </ScrollArea>
+      </Card>
 
-      {cost > 0 && (
-        <p className="text-xs text-slate-500 mt-1 px-1">
-          Cost: ${cost.toFixed(4)}
-        </p>
-      )}
-
-      <div className="flex gap-2 mt-3">
-        <Textarea
+      <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
+        <TextArea
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" && !e.shiftKey) {
+          onPressEnter={(e) => {
+            if (!e.shiftKey) {
               e.preventDefault();
               sendMessage();
             }
           }}
-          placeholder="Ask anything... (Enter to send)"
-          className="flex-1 resize-none bg-slate-900 border-slate-800 text-slate-100 placeholder:text-slate-500 min-h-[44px] max-h-32 text-base md:text-sm"
+          placeholder="Ask anything... (Enter để gửi, Shift+Enter xuống dòng)"
+          autoSize={{ minRows: 1, maxRows: 4 }}
           disabled={streaming}
+          style={{ flex: 1 }}
         />
         {streaming ? (
           <Button
+            danger
+            type="primary"
+            icon={<StopOutlined />}
             onClick={() => {
               abortRef.current?.abort();
               setStreaming(false);
             }}
-            className="bg-red-600 hover:bg-red-700 text-white self-end min-h-[44px] min-w-[44px]"
-            size="icon"
+            style={{ height: "auto" }}
           >
-            <Square className="size-4" />
+            Stop
           </Button>
         ) : (
           <Button
+            type="primary"
+            icon={<SendOutlined />}
             onClick={sendMessage}
             disabled={!input.trim()}
-            className="bg-emerald-600 hover:bg-emerald-700 text-white self-end min-h-[44px] min-w-[44px]"
-            size="icon"
+            style={{ height: "auto" }}
           >
-            <Send className="size-4" />
+            Send
           </Button>
         )}
       </div>

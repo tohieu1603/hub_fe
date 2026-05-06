@@ -4,9 +4,26 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { api } from "@/lib/api";
 import type { HubApp, Capability } from "@/types";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Server, AppWindow, Zap, Activity } from "lucide-react";
+import {
+  Card,
+  Row,
+  Col,
+  Statistic,
+  Tag,
+  Spin,
+  Alert,
+  List,
+  Typography,
+  Space,
+} from "antd";
+import {
+  CloudServerOutlined,
+  AppstoreOutlined,
+  ThunderboltOutlined,
+  HistoryOutlined,
+} from "@ant-design/icons";
+
+const { Title, Text } = Typography;
 
 interface ActivityItem {
   type?: string;
@@ -48,116 +65,93 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-48">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-emerald-500 border-t-transparent" />
+      <div style={{ display: "flex", justifyContent: "center", padding: 80 }}>
+        <Spin size="large" />
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col gap-6">
+    <div style={{ padding: 24, maxWidth: 1400, margin: "0 auto" }}>
+      <Title level={3} style={{ marginBottom: 24 }}>Dashboard</Title>
+
       {hubOffline && (
-        <div className="rounded-lg border border-yellow-600/30 bg-yellow-600/10 px-4 py-3 text-sm text-yellow-400">
-          Hub is offline. Some data may be unavailable.
-        </div>
+        <Alert
+          type="warning"
+          showIcon
+          message="Hub is offline. Some data may be unavailable."
+          style={{ marginBottom: 16 }}
+        />
       )}
 
-      <div className="grid grid-cols-1 gap-3 md:gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        {/* Machine card */}
-        <Card className="bg-slate-900 border-slate-800">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-slate-300 text-sm font-medium">
-                Machine
-              </CardTitle>
-              <Server className="size-4 text-slate-500" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            {machine ? (
-              <div className="flex flex-col gap-1">
-                <span className="text-slate-100 font-semibold">{machine.name}</span>
-                <Badge
-                  className={
-                    machine.status === "active"
-                      ? "bg-emerald-600/20 text-emerald-400 border-emerald-600/30 w-fit text-xs"
-                      : "bg-red-600/20 text-red-400 border-red-600/30 w-fit text-xs"
-                  }
-                >
+      <Row gutter={[16, 16]}>
+        <Col xs={24} sm={12} xl={6}>
+          <Card>
+            <Statistic
+              title="Machine"
+              value={machine?.name || "(none)"}
+              prefix={<CloudServerOutlined style={{ color: "#2563eb" }} />}
+            />
+            {machine && (
+              <Space direction="vertical" size={4} style={{ marginTop: 8 }}>
+                <Tag color={machine.status === "active" ? "success" : "default"}>
                   {machine.status}
-                </Badge>
-                <span className="text-xs text-slate-500 truncate">
+                </Tag>
+                <Text type="secondary" style={{ fontSize: 12 }} ellipsis>
                   {machine.hub_url}
-                </span>
-              </div>
-            ) : (
-              <span className="text-slate-500 text-sm">No machine assigned</span>
+                </Text>
+              </Space>
             )}
-          </CardContent>
-        </Card>
+          </Card>
+        </Col>
 
-        {/* Apps card */}
-        <Card className="bg-slate-900 border-slate-800">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-slate-300 text-sm font-medium">
-                Apps
-              </CardTitle>
-              <AppWindow className="size-4 text-slate-500" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <span className="text-3xl font-bold text-slate-100">
-              {apps.length}
-            </span>
-            <p className="text-xs text-slate-500 mt-1">Connected apps</p>
-          </CardContent>
-        </Card>
+        <Col xs={24} sm={12} xl={6}>
+          <Card>
+            <Statistic
+              title="Apps connected"
+              value={apps.length}
+              prefix={<AppstoreOutlined style={{ color: "#10b981" }} />}
+            />
+            <Text type="secondary" style={{ fontSize: 12 }}>
+              Skills đã đăng ký với Hub
+            </Text>
+          </Card>
+        </Col>
 
-        {/* Skills card */}
-        <Card className="bg-slate-900 border-slate-800">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-slate-300 text-sm font-medium">
-                Skills
-              </CardTitle>
-              <Zap className="size-4 text-slate-500" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <span className="text-3xl font-bold text-slate-100">
-              {capabilities.length}
-            </span>
-            <p className="text-xs text-slate-500 mt-1">Total capabilities</p>
-          </CardContent>
-        </Card>
+        <Col xs={24} sm={12} xl={6}>
+          <Card>
+            <Statistic
+              title="Capabilities"
+              value={capabilities.length}
+              prefix={<ThunderboltOutlined style={{ color: "#f59e0b" }} />}
+            />
+            <Text type="secondary" style={{ fontSize: 12 }}>
+              Tổng số skill có thể gọi
+            </Text>
+          </Card>
+        </Col>
 
-        {/* Activity card */}
-        <Card className="bg-slate-900 border-slate-800">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-slate-300 text-sm font-medium">
-                Activity
-              </CardTitle>
-              <Activity className="size-4 text-slate-500" />
-            </div>
-          </CardHeader>
-          <CardContent>
+        <Col xs={24} sm={12} xl={6}>
+          <Card title={<><HistoryOutlined /> Recent activity</>} size="small">
             {activity.length === 0 ? (
-              <span className="text-slate-500 text-sm">No recent activity</span>
+              <Text type="secondary">Chưa có hoạt động nào</Text>
             ) : (
-              <ul className="flex flex-col gap-1">
-                {activity.slice(0, 5).map((item, i) => (
-                  <li key={i} className="text-xs text-slate-400 truncate">
-                    <span className="text-slate-300">{item.type ?? "event"}</span>
-                    {item.details ? ` — ${String(item.details).slice(0, 40)}` : ""}
-                  </li>
-                ))}
-              </ul>
+              <List
+                size="small"
+                dataSource={activity.slice(0, 5)}
+                renderItem={(item) => (
+                  <List.Item style={{ padding: "4px 0" }}>
+                    <Text style={{ fontSize: 12 }}>
+                      <Tag color="blue" style={{ marginRight: 4 }}>{item.type || "event"}</Tag>
+                      {item.details ? String(item.details).slice(0, 40) : ""}
+                    </Text>
+                  </List.Item>
+                )}
+              />
             )}
-          </CardContent>
-        </Card>
-      </div>
+          </Card>
+        </Col>
+      </Row>
     </div>
   );
 }

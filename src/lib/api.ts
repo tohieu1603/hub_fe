@@ -112,4 +112,44 @@ export const api = {
     deleteUser: (id: string) =>
       apiFetch(`/admin/users/${id}`, { method: "DELETE" }),
   },
+  drafts: {
+    list: (params: { status?: string; limit?: number; page?: number } = {}) => {
+      const qs = new URLSearchParams();
+      if (params.status) qs.set("status", params.status);
+      if (params.limit) qs.set("limit", String(params.limit));
+      if (params.page) qs.set("page", String(params.page));
+      const q = qs.toString();
+      return apiFetch<{ success: boolean; data: { items: any[]; total: number; page: number; limit: number } }>(
+        `/hub/drafts${q ? "?" + q : ""}`
+      );
+    },
+    create: (body: { topic: string; mode?: string }) =>
+      apiFetch<{ success: boolean; data: any }>("/hub/drafts", {
+        method: "POST",
+        body: JSON.stringify(body),
+      }),
+    get: (id: string) =>
+      apiFetch<{ success: boolean; data: any }>(`/hub/drafts/${id}`),
+    update: (id: string, body: any) =>
+      apiFetch<{ success: boolean; data: any }>(`/hub/drafts/${id}`, {
+        method: "PUT",
+        body: JSON.stringify(body),
+      }),
+    apply: (id: string) =>
+      apiFetch<{ success: boolean; data: any }>(`/hub/drafts/${id}/apply`, {
+        method: "POST",
+      }),
+    renderCover: (id: string, description?: string) =>
+      apiFetch<{ success: boolean; data: { cover_path: string } }>(
+        `/hub/drafts/${id}/render-cover`,
+        {
+          method: "POST",
+          body: JSON.stringify({ description }),
+        }
+      ),
+    status: (id: string) =>
+      apiFetch<{ success: boolean; data: any }>(`/hub/drafts/${id}/status`),
+    delete: (id: string) =>
+      apiFetch(`/hub/drafts/${id}`, { method: "DELETE" }),
+  },
 };

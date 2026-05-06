@@ -5,110 +5,95 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Card, Form, Input, Button, Typography, message } from "antd";
 import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from "@/components/ui/card";
-import { toast } from "sonner";
+  UserAddOutlined,
+  UserOutlined,
+  MailOutlined,
+  LockOutlined,
+} from "@ant-design/icons";
+
+const { Title, Text } = Typography;
 
 export default function RegisterPage() {
   const router = useRouter();
   const { login } = useAuth();
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [msg, msgCtx] = message.useMessage();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const onFinish = async (values: { name: string; email: string; password: string }) => {
     setLoading(true);
     try {
-      const res = await api.auth.register({ name, email, password });
+      const res = await api.auth.register(values);
       await login(res.token);
       router.replace("/dashboard");
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Registration failed");
+      msg.error(err instanceof Error ? err.message : "Registration failed");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <Card className="w-full max-w-sm bg-slate-900 border-slate-800">
-      <CardHeader className="px-4 md:px-6">
-        <CardTitle className="text-slate-100 text-xl">Create account</CardTitle>
-        <CardDescription className="text-slate-400">
-          Sign up to get access to the hub
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="px-4 md:px-6">
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="name" className="text-slate-300">
-              Name
-            </Label>
-            <Input
-              id="name"
-              type="text"
-              placeholder="Your name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-              className="bg-slate-800 border-slate-700 text-slate-100 placeholder:text-slate-500 h-11"
-            />
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="email" className="text-slate-300">
-              Email
-            </Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="you@example.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              className="bg-slate-800 border-slate-700 text-slate-100 placeholder:text-slate-500 h-11"
-            />
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="password" className="text-slate-300">
-              Password
-            </Label>
-            <Input
-              id="password"
-              type="password"
-              placeholder="••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              className="bg-slate-800 border-slate-700 text-slate-100 placeholder:text-slate-500 h-11"
-            />
-          </div>
+    <Card
+      style={{
+        width: "100%",
+        maxWidth: 420,
+        boxShadow: "0 20px 60px rgba(15, 23, 42, 0.08)",
+        border: "1px solid #e2e8f0",
+      }}
+    >
+      {msgCtx}
+      <div style={{ textAlign: "center", marginBottom: 28 }}>
+        <Title level={3} style={{ margin: 0 }}>
+          Create account
+        </Title>
+        <Text type="secondary">Sign up cho MulApps Hub</Text>
+      </div>
+      <Form layout="vertical" onFinish={onFinish} requiredMark={false} size="large">
+        <Form.Item label="Name" name="name" rules={[{ required: true, message: "Nhập tên" }]}>
+          <Input prefix={<UserOutlined />} placeholder="Tên của bạn" />
+        </Form.Item>
+        <Form.Item
+          label="Email"
+          name="email"
+          rules={[
+            { required: true, message: "Nhập email" },
+            { type: "email", message: "Email không hợp lệ" },
+          ]}
+        >
+          <Input prefix={<MailOutlined />} placeholder="you@example.com" autoComplete="email" />
+        </Form.Item>
+        <Form.Item
+          label="Password"
+          name="password"
+          rules={[
+            { required: true, message: "Nhập password" },
+            { min: 6, message: "Tối thiểu 6 ký tự" },
+          ]}
+        >
+          <Input.Password
+            prefix={<LockOutlined />}
+            placeholder="••••••••"
+            autoComplete="new-password"
+          />
+        </Form.Item>
+        <Form.Item style={{ marginBottom: 12 }}>
           <Button
-            type="submit"
-            disabled={loading}
-            className="bg-emerald-600 hover:bg-emerald-700 text-white mt-2 h-11 text-base"
+            type="primary"
+            htmlType="submit"
+            loading={loading}
+            icon={<UserAddOutlined />}
+            block
           >
-            {loading ? "Creating account..." : "Create account"}
+            Create account
           </Button>
-          <p className="text-center text-sm text-slate-400">
-            Already have an account?{" "}
-            <Link
-              href="/login"
-              className="text-emerald-400 hover:text-emerald-300 underline"
-            >
-              Sign in
-            </Link>
-          </p>
-        </form>
-      </CardContent>
+        </Form.Item>
+        <div style={{ textAlign: "center" }}>
+          <Text type="secondary">Đã có tài khoản? </Text>
+          <Link href="/login">Sign in</Link>
+        </div>
+      </Form>
     </Card>
   );
 }

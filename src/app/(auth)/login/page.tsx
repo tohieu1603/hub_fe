@@ -1,100 +1,82 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from "@/components/ui/card";
-import { toast } from "sonner";
+import { Card, Form, Input, Button, Typography, message } from "antd";
+import { LoginOutlined, MailOutlined, LockOutlined } from "@ant-design/icons";
+
+const { Title, Text } = Typography;
 
 export default function LoginPage() {
-  const router = useRouter();
   const { login } = useAuth();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [msg, msgCtx] = message.useMessage();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const onFinish = async (values: { email: string; password: string }) => {
     setLoading(true);
     try {
-      const res = await api.auth.login({ email, password });
+      const res = await api.auth.login(values);
       await login(res.token);
-      // Use window.location for hard redirect to ensure auth state is fresh
       window.location.href = "/dashboard";
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Login failed");
+      msg.error(err instanceof Error ? err.message : "Login failed");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <Card className="w-full max-w-sm bg-slate-900 border-slate-800">
-      <CardHeader className="px-4 md:px-6">
-        <CardTitle className="text-slate-100 text-xl">Sign in</CardTitle>
-        <CardDescription className="text-slate-400">
-          Enter your credentials to access the hub
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="px-4 md:px-6">
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="email" className="text-slate-300">
-              Email
-            </Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="you@example.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              className="bg-slate-800 border-slate-700 text-slate-100 placeholder:text-slate-500 h-11"
-            />
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="password" className="text-slate-300">
-              Password
-            </Label>
-            <Input
-              id="password"
-              type="password"
-              placeholder="••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              className="bg-slate-800 border-slate-700 text-slate-100 placeholder:text-slate-500 h-11"
-            />
-          </div>
+    <Card
+      style={{
+        width: "100%",
+        maxWidth: 420,
+        boxShadow: "0 20px 60px rgba(15, 23, 42, 0.08)",
+        border: "1px solid #e2e8f0",
+      }}
+    >
+      {msgCtx}
+      <div style={{ textAlign: "center", marginBottom: 28 }}>
+        <Title level={3} style={{ margin: 0 }}>
+          Sign in
+        </Title>
+        <Text type="secondary">Đăng nhập vào MulApps Hub</Text>
+      </div>
+      <Form layout="vertical" onFinish={onFinish} requiredMark={false} size="large">
+        <Form.Item
+          label="Email"
+          name="email"
+          rules={[
+            { required: true, message: "Nhập email" },
+            { type: "email", message: "Email không hợp lệ" },
+          ]}
+        >
+          <Input prefix={<MailOutlined />} placeholder="you@example.com" autoComplete="email" />
+        </Form.Item>
+        <Form.Item
+          label="Password"
+          name="password"
+          rules={[{ required: true, message: "Nhập password" }]}
+        >
+          <Input.Password prefix={<LockOutlined />} placeholder="••••••••" autoComplete="current-password" />
+        </Form.Item>
+        <Form.Item style={{ marginBottom: 12 }}>
           <Button
-            type="submit"
-            disabled={loading}
-            className="bg-emerald-600 hover:bg-emerald-700 text-white mt-2 h-11 text-base"
+            type="primary"
+            htmlType="submit"
+            loading={loading}
+            icon={<LoginOutlined />}
+            block
           >
-            {loading ? "Signing in..." : "Sign in"}
+            Sign in
           </Button>
-          <p className="text-center text-sm text-slate-400">
-            No account?{" "}
-            <Link
-              href="/register"
-              className="text-emerald-400 hover:text-emerald-300 underline"
-            >
-              Register
-            </Link>
-          </p>
-        </form>
-      </CardContent>
+        </Form.Item>
+        <div style={{ textAlign: "center" }}>
+          <Text type="secondary">Chưa có tài khoản? </Text>
+          <Link href="/register">Register</Link>
+        </div>
+      </Form>
     </Card>
   );
 }

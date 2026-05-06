@@ -12,6 +12,7 @@ import {
   Menu,
   X,
   Newspaper,
+  FileText,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/auth-context";
@@ -28,6 +29,7 @@ const navItems = [
   { href: "/chat", label: "Chat", icon: MessageSquare },
   { href: "/apps", label: "Apps", icon: AppWindow },
   { href: "/ai-feed", label: "AI Feed", icon: Newspaper },
+  { href: "/drafts", label: "Drafts", icon: FileText },
   { href: "/settings", label: "Settings", icon: Settings },
 ];
 
